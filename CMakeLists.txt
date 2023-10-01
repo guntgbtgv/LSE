@@ -1,9 +1,14 @@
 cmake_minimum_required (VERSION 2.6)
 project(LSE)
 
+find_package(catkin REQUIRED COMPONENTS 
+  cmake_modules
+)
+find_package(TinyXML REQUIRED)
+
 ##################### Set some variables #####################
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-SET(CMAKE_BUILD_TYPE "Release")
+# SET(CMAKE_BUILD_TYPE "Release")
 set (TINYXML "tinyxml")
 
 
@@ -13,36 +18,101 @@ include_directories(./include)
 include_directories(${Eigen_INCLUDE_DIRS})
 include_directories(${TINYXML})
 
-set(USE_CERES TRUE CACHE BOOL "Use Ceres")
-if(USE_CERES)
-	add_definitions( -DUSE_CERES=ON )
-	find_package(Ceres REQUIRED)
-	include_directories(${CERES_INCLUDES})
-endif(USE_CERES)
+###################################
+## catkin specific configuration ##
+###################################
+## The catkin_package macro generates cmake config files for your package
+## Declare things to be passed to dependent projects
+## INCLUDE_DIRS: uncomment this if your package contains header files
+## LIBRARIES: libraries you create in this project that dependent projects also need
+## CATKIN_DEPENDS: catkin_packages dependent projects also need
+## DEPENDS: system dependencies of this project that dependent projects also need
+catkin_package(
+  INCLUDE_DIRS 
+    include
+  LIBRARIES
+    ${PROJECT_NAME}
+#  CATKIN_DEPENDS
+  DEPENDS
+    Eigen
+)
+
+set(USE_CERES FALSE CACHE BOOL "Use Ceres")
+# if(USE_CERES)
+# 	add_definitions( -DUSE_CERES=ON )
+# 	find_package(Ceres REQUIRED)
+# 	include_directories(${CERES_INCLUDES})
+# endif(USE_CERES)
 
 # Build a library to be imported as a python module.
-set(WRAP_PYTHON TRUE CACHE BOOL "Build Python Wrapper")
-if(WRAP_PYTHON)
-	add_definitions( -DWRAP_PYTHON=ON )
-	find_package(PythonLibs REQUIRED) 
-	LINK_LIBRARIES(boost_python)
-	INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
-	LINK_DIRECTORIES(${PYTHON_INCLUDE_DIR})
+# set(WRAP_PYTHON TRUE CACHE BOOL "Build Python Wrapper")
+# if(WRAP_PYTHON)
+# 	add_definitions( -DWRAP_PYTHON=ON )
+# 	find_package(PythonLibs REQUIRED) 
+# 	target_link_libraries(boost_python)
+# 	include_directories(${PYTHON_INCLUDE_DIR})
+# 	LINK_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 	
-	if(USE_CERES)
-		ADD_LIBRARY(_PythonManager SHARED src/Manager.cpp src/PythonManager.cpp src/FilterOCEKF.cpp src/FilterVUKF.cpp src/FilterVUKF2.cpp src/FilterInertialOF.cpp src/FilterFLS.cpp src/DelayCalibration.cpp src/RobotCalibration.cpp ${TINYXML}/tinyxml.cpp ${TINYXML}/tinyxmlerror.cpp ${TINYXML}/tinyxmlparser.cpp)
-		TARGET_LINK_LIBRARIES(_PythonManager ${CERES_LIBRARIES_SHARED})
-	else(USE_CERES)
-		ADD_LIBRARY(_PythonManager SHARED src/Manager.cpp src/PythonManager.cpp src/FilterOCEKF.cpp src/FilterVUKF.cpp src/FilterVUKF2.cpp src/DelayCalibration.cpp ${TINYXML}/tinyxml.cpp ${TINYXML}/tinyxmlerror.cpp ${TINYXML}/tinyxmlparser.cpp)
-	endif(USE_CERES)
-	SET_TARGET_PROPERTIES(_PythonManager PROPERTIES PREFIX "")
-endif(WRAP_PYTHON)
+# 	if(USE_CERES)
+# 		ADD_LIBRARY(_PythonManager SHARED 
+# 			src/Manager.cpp 
+# 			src/PythonManager.cpp 
+# 			src/FilterOCEKF.cpp 
+# 			src/FilterVUKF.cpp 
+# 			src/FilterVUKF2.cpp 
+# 			src/FilterInertialOF.cpp 
+# 			src/FilterFLS.cpp 
+# 			src/DelayCalibration.cpp 
+# 			src/RobotCalibration.cpp 
+# 			${TINYXML}/tinyxml.cpp 
+# 			${TINYXML}/tinyxmlerror.cpp 
+# 			${TINYXML}/tinyxmlparser.cpp
+# 		)
+# 		TARGET_LINK_LIBRARIES(_PythonManager ${CERES_LIBRARIES_SHARED})
+# 	else(USE_CERES)
+# 		ADD_LIBRARY(_PythonManager SHARED 
+# 			src/Manager.cpp 
+# 			src/PythonManager.cpp 
+# 			src/FilterOCEKF.cpp 
+# 			src/FilterVUKF.cpp 
+# 			src/FilterVUKF2.cpp 
+# 			src/DelayCalibration.cpp 
+# 			${TINYXML}/tinyxml.cpp 
+# 			${TINYXML}/tinyxmlerror.cpp 
+# 			${TINYXML}/tinyxmlparser.cpp
+# 		)
+# 	endif(USE_CERES)
+# 	SET_TARGET_PROPERTIES(_PythonManager PROPERTIES PREFIX "")
+# endif(WRAP_PYTHON)
 
 if(USE_CERES)
-	add_library(LSE src/Manager.cpp src/PythonManager.cpp src/FilterOCEKF.cpp src/FilterVUKF.cpp src/FilterVUKF2.cpp src/FilterInertialOF.cpp src/FilterFLS.cpp src/DelayCalibration.cpp src/RobotCalibration.cpp ${TINYXML}/tinyxml.cpp ${TINYXML}/tinyxmlerror.cpp ${TINYXML}/tinyxmlparser.cpp)
+	add_library(LSE 
+		src/Manager.cpp 
+		src/PythonManager.cpp 
+		src/FilterOCEKF.cpp 
+		src/FilterVUKF.cpp 
+		src/FilterVUKF2.cpp 
+		src/FilterInertialOF.cpp 
+		src/FilterFLS.cpp 
+		src/DelayCalibration.cpp 
+		# src/RobotCalibration.cpp 
+		${TINYXML}/tinyxml.cpp 
+		${TINYXML}/tinyxmlerror.cpp 
+		${TINYXML}/tinyxmlparser.cpp
+	)
 	TARGET_LINK_LIBRARIES(LSE ${CERES_LIBRARIES_SHARED})
 else(USE_CERES)
-	add_library(LSE src/Manager.cpp src/PythonManager.cpp src/FilterOCEKF.cpp src/FilterVUKF.cpp src/FilterVUKF2.cpp src/DelayCalibration.cpp ${TINYXML}/tinyxml.cpp ${TINYXML}/tinyxmlerror.cpp ${TINYXML}/tinyxmlparser.cpp)
+	add_library(LSE 
+		src/Manager.cpp 
+		src/PythonManager.cpp 
+		src/FilterOCEKF.cpp 
+		src/FilterVUKF.cpp 
+		src/FilterVUKF2.cpp 
+		src/DelayCalibration.cpp 
+		${TINYXML}/tinyxml.cpp 
+		${TINYXML}/tinyxmlerror.cpp 
+		${TINYXML}/tinyxmlparser.cpp
+	)
 endif(USE_CERES)
 
 ##################### Handle FindLSE.cmake file #####################
